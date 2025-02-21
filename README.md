@@ -1,5 +1,5 @@
 # miw-dam-widget
-
+Guión de Diego Martín Fernández martinfdiego@uniovi.es
 ## Paso 1: Instalación e Inicialización
 
 Para comenzar, instala las herramientas necesarias y crea un nuevo proyecto Expo.
