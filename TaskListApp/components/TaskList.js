@@ -13,6 +13,8 @@ const TaskList = () => {
   const [task, setTask] = useState('');
   const [tasks, setTasks] = useState([]);
   const [editingId, setEditingId] = useState(null);
+  const [filter, setFilter] = useState('all'); // 'all', 'active', 'completed'
+  const [searchTerm, setSearchTerm] = useState('');
 
   // Cargar tareas desde AsyncStorage al montar el componente
   useEffect(() => {
@@ -84,6 +86,20 @@ const TaskList = () => {
     setEditingId(null);
   };
 
+  // Función para limpiar las tareas completadas
+  const clearCompletedTasks = () => {
+    setTasks(tasks.filter(task => !task.completed));
+  };
+
+  // Filtrar tareas según el filtro seleccionado y el término de búsqueda
+  const filteredTasks = tasks
+    .filter(task => {
+      if (filter === 'active') return !task.completed;
+      if (filter === 'completed') return task.completed;
+      return true;
+    })
+    .filter(task => task.text.toLowerCase().includes(searchTerm.toLowerCase()));
+
   // Renderizado de cada elemento de la lista
   const renderItem = ({ item }) => (
     <View style={styles.taskItem}>
@@ -107,6 +123,8 @@ const TaskList = () => {
   return (
     <View style={styles.container}>
       <Text style={styles.header}>Lista de Tareas</Text>
+
+      {/* Input para agregar o actualizar tareas */}
       <View style={styles.inputContainer}>
         <TextInput
           style={styles.input}
@@ -123,8 +141,49 @@ const TaskList = () => {
           </Text>
         </TouchableOpacity>
       </View>
+
+      {/* Buscador de tareas */}
+      <View style={styles.searchContainer}>
+        <TextInput
+          style={styles.searchInput}
+          placeholder="Buscar tarea..."
+          value={searchTerm}
+          onChangeText={setSearchTerm}
+        />
+      </View>
+
+      {/* Filtros */}
+      <View style={styles.filterButtons}>
+        <TouchableOpacity onPress={() => setFilter('all')}>
+          <Text style={[styles.filterButton, filter === 'all' && styles.activeFilter]}>
+            Todos
+          </Text>
+        </TouchableOpacity>
+        <TouchableOpacity onPress={() => setFilter('active')}>
+          <Text style={[styles.filterButton, filter === 'active' && styles.activeFilter]}>
+            Activas
+          </Text>
+        </TouchableOpacity>
+        <TouchableOpacity onPress={() => setFilter('completed')}>
+          <Text style={[styles.filterButton, filter === 'completed' && styles.activeFilter]}>
+            Completadas
+          </Text>
+        </TouchableOpacity>
+      </View>
+
+      {/* Contador y botón para limpiar completadas */}
+      <View style={styles.extraContainer}>
+        <Text style={styles.counterText}>
+          Tareas restantes: {tasks.filter(task => !task.completed).length}
+        </Text>
+        <TouchableOpacity onPress={clearCompletedTasks} style={styles.clearButton}>
+          <Text style={styles.clearButtonText}>Limpiar Completadas</Text>
+        </TouchableOpacity>
+      </View>
+
+      {/* Lista de tareas */}
       <FlatList
-        data={tasks}
+        data={filteredTasks}
         keyExtractor={(item) => item.id}
         renderItem={renderItem}
         ListEmptyComponent={
@@ -149,7 +208,7 @@ const styles = StyleSheet.create({
   },
   inputContainer: {
     flexDirection: 'row',
-    marginBottom: 20,
+    marginBottom: 10,
   },
   input: {
     flex: 1,
@@ -167,6 +226,50 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
   },
   buttonText: {
+    color: '#fff',
+    fontWeight: 'bold',
+  },
+  searchContainer: {
+    marginBottom: 10,
+  },
+  searchInput: {
+    borderColor: '#999',
+    borderWidth: 1,
+    borderRadius: 5,
+    padding: 10,
+    backgroundColor: '#fff',
+  },
+  filterButtons: {
+    flexDirection: 'row',
+    justifyContent: 'space-around',
+    marginBottom: 10,
+  },
+  filterButton: {
+    fontSize: 16,
+    color: '#555',
+  },
+  activeFilter: {
+    fontWeight: 'bold',
+    color: '#000',
+    textDecorationLine: 'underline',
+  },
+  extraContainer: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+    marginBottom: 10,
+  },
+  counterText: {
+    fontSize: 16,
+    color: '#333',
+  },
+  clearButton: {
+    backgroundColor: '#d9534f',
+    paddingHorizontal: 10,
+    paddingVertical: 5,
+    borderRadius: 5,
+  },
+  clearButtonText: {
     color: '#fff',
     fontWeight: 'bold',
   },
